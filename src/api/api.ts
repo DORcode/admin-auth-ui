@@ -2,7 +2,7 @@ import axios from 'axios'
 import localstore from '@/util/localstore'
 import sessionstore from '../util/sessionstore'
 import msg from '@/util/message'
-import msgutil from '@/util/message'
+import qs from 'qs'
 
 const TIMEOUT = 600000
 const instance = axios.create()
@@ -28,7 +28,9 @@ instance.interceptors.request.use(
 // response interceptor
 instance.interceptors.response.use(
   response => {
+    
     const res = response.data
+
     // 根据编号或其它状态来判断问题，并提醒
     return res
   },
@@ -80,15 +82,48 @@ const post = (url: string, data: any) => {
     timeout: TIMEOUT
   }).then(
     (response) => {
-      return checkStatus(response)
+      return response
     }
   ).catch(
     (error) => {
       console.log(error.response.data)
-      msgutil.error(error.response.data.msg)
+      msg.error(error.response.data.msg)
     }
   )
 }
+
+const postForm = (url: string, data: any) => {
+  return axios({
+    method: 'get',
+    url,
+    data: qs.stringify(data),
+    timeout: TIMEOUT,
+    headers: {'content-type': 'application/x-www-form-urlencoded'}
+  }).then(
+    (response) => {
+      return response
+    }
+  ).catch(
+    (error) => {
+      console.log(error.response.data)
+      msg.error(error.response.data.msg)
+    }
+  )
+}
+
+const postProgress = (url: string, data: any, config: any) => {
+  return axios.post(url, data, config).then(
+    (response) => {
+      return response
+    }
+  ).catch(
+    (error) => {
+      msg.error(error.response.data.msg)
+    }
+  )
+}
+
+
 
 const get = (url: string, params: any) => {
   return axios({
@@ -99,12 +134,12 @@ const get = (url: string, params: any) => {
     headers: {'X-Requested-With': 'XMLHttpRequest'}
   }).then(
     (response) => {
-      return checkStatus(response)
+      return response
     }
   ).catch(
     (error) => {
       console.log(error.response.data)
-      msgutil.error(error.response.data.msg)
+      msg.error(error.response.data.msg)
     }
   )
 }
@@ -121,7 +156,7 @@ const del = (url: string) => {
     }
   ).catch(
     (error) => {
-    msgutil.error(error.response.data.msg)
+    msg.error(error.response.data.msg)
     }
   )
     
