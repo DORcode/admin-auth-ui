@@ -1,9 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+import Home from '../views/home/Home.vue'
 import User from '../views/User.vue'
 import Role from '../views/Role.vue'
 import Permission from '../views/Permission.vue'
+import sessionStore from '@/util/sessionstore'
 
 Vue.use(VueRouter)
 
@@ -11,6 +12,7 @@ const routes = [
   {
     path: '/login',
     name: '登录页面',
+    isNeedLogin: false,
     component: () => import('../views/login/Login.vue')
   },
   {
@@ -51,6 +53,12 @@ const routes = [
     ]
   },
   {
+    path: '/tags',
+    name: '已打开',
+    isNeedLogin: true,
+    component: () => import(/* webpackChunkName: "tags" */ '../components/tags-nav/tags-nav.vue')
+  },
+  {
     path: '/401',
     name: '401',
     component: () => import(/* webpackChunkName: "401" */ '../views/error-page/401.vue')
@@ -71,6 +79,35 @@ const router = new VueRouter({
   mode: 'history',
   // base: process.env.BASE_URL,
   routes
+})
+
+function isNeedLogin (item: any): boolean {
+  let flag = false
+  routes.forEach(
+    (val) => {
+      if (val.path === item.path) {
+        flag = val.isNeedLogin ? val.isNeedLogin : false
+      }
+    }
+  )
+  return flag
+}
+
+router.beforeEach((to, from, next) => {
+  console.log(isNeedLogin(to))
+  // 获取目标页面是否需要登录
+  if (isNeedLogin(to)) {
+    const expire = Number(sessionStore.get('tokenExpireTime'))
+    console.log(new Date().getTime())
+    // 当前token是否过期
+    if (expire < new Date().getTime()) {
+      router.push({ path: '/login' })
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
 })
 
 export default router

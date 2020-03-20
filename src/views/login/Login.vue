@@ -1,7 +1,9 @@
 <template>
   <div class="login">
     <div class="content">
-      <p>登录 </p>
+      <div>
+        <p>登录 </p>
+      </div>
       <Form class="login-form" ref="formInline" :model="formInline" :rules="ruleInline">
         <FormItem prop="user">
           <Input type="text" placeholder="输入帐户" style="width: auto" v-model="formInline.user">
@@ -22,9 +24,11 @@
 </template>
 
 <script type="text/ecmascript-6">
+import Api from '@/api/api'
+import sessionStore from '@/util/sessionstore'
+
 export default {
   components: {
-
   },
   data () {
     return {
@@ -48,7 +52,18 @@ export default {
       this.$refs[name].validate((valid) => {
         if (valid) {
           // 登录验证
-          this.$Message.success('登录成功')
+          Api.login(this.formInline).then(
+            res => {
+              if (res.data) {
+                sessionStore.set('token', res.data.token)
+                sessionStore.set('tokenExpireTime', res.data.tokenExpireTime)
+                this.$router.push({ name: '/' })
+                this.$Message.success(res.data.msg)
+              } else {
+                this.$Message.error(res.data.msg)
+              }
+            }
+          )
         } else {
           this.$Message.error('请求输入帐户或密码！')
         }
