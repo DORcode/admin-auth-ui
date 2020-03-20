@@ -1,5 +1,4 @@
 import axios from 'axios'
-import localstore from '@/util/localstore'
 import sessionstore from '../util/sessionstore'
 import msg from '@/util/message'
 import qs from 'qs'
@@ -16,7 +15,7 @@ instance.interceptors.request.use(
       'Access-Control-Allow-Origin': '*'
     }
     if (sessionstore.get('token')) {
-      config.headers['token'] = sessionstore.get('token')
+      config.headers.token = sessionstore.get('token')
     }
     return config
   },
@@ -28,9 +27,7 @@ instance.interceptors.request.use(
 // response interceptor
 instance.interceptors.response.use(
   response => {
-    
     const res = response.data
-
     // 根据编号或其它状态来判断问题，并提醒
     return res
   },
@@ -61,7 +58,7 @@ const checkCode = (res: any) => {
   // console.log('checkCode.res=' + JSON.stringify(res.data.message))
   if (res.status !== 200) {
     if ((res.data) && (res.data.error)) {
-    console.log('res.error = ' + JSON.stringify(res.data.error))
+      console.log('res.error = ' + JSON.stringify(res.data.error))
     }
     // console.log(res.data.message)
   }
@@ -98,7 +95,7 @@ const postForm = (url: string, data: any) => {
     url,
     data: qs.stringify(data),
     timeout: TIMEOUT,
-    headers: {'content-type': 'application/x-www-form-urlencoded'}
+    headers: { 'content-type': 'application/x-www-form-urlencoded' }
   }).then(
     (response) => {
       return response
@@ -123,15 +120,13 @@ const postProgress = (url: string, data: any, config: any) => {
   )
 }
 
-
-
 const get = (url: string, params: any) => {
   return axios({
     method: 'get',
     url,
     params,
     timeout: TIMEOUT,
-    headers: {'X-Requested-With': 'XMLHttpRequest'}
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
   }).then(
     (response) => {
       return response
@@ -149,27 +144,26 @@ const del = (url: string) => {
     method: 'delete',
     url,
     timeout: TIMEOUT,
-    headers: {'X-Requested-With': 'XMLHttpRequest'}
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
   }).then(
     (response) => {
-        return checkStatus(response)
+      return checkStatus(response)
     }
   ).catch(
     (error) => {
-    msg.error(error.response.data.msg)
+      msg.error(error.response.data.msg)
     }
   )
-    
 }
 
 const Login = {
-  login (data: object) {
+  login (data: any) {
     return post('/api/login', data)
   }
 }
 
 const APIS = {
-    ...Login
+  ...Login
 }
 
 export default APIS
