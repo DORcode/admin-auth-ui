@@ -162,6 +162,13 @@ const Login = {
   }
 }
 
+const Permission = {
+  menus (data: any) {
+    return post('/api/syspermission/menus', data)
+  }
+
+}
+
 const APIS = {
   ...Login
 }

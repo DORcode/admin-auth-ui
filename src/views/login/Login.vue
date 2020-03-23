@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <div class="content">
-      <div>
+      <div class="title">
         <p>登录 </p>
       </div>
       <Form class="login-form" ref="formInline" :model="formInline" :rules="ruleInline">
@@ -15,8 +15,8 @@
             <Icon type="ios-lock-outline" slot="prefix" />
           </Input>
         </FormItem>
-        <FormItem>
-          <Button type="primary" @click="handleSubmit('formInline')">登录</Button>
+        <FormItem class="submit-form">
+          <Button class="submit-btn" type="primary" @click="handleSubmit('formInline')">登录</Button>
         </FormItem>
       </Form>
     </div>
@@ -54,7 +54,7 @@ export default {
           // 登录验证
           Api.login(this.formInline).then(
             res => {
-              if (res.data) {
+              if (res && res.data) {
                 sessionStore.set('token', res.data.token)
                 sessionStore.set('tokenExpireTime', res.data.tokenExpireTime)
                 this.$router.push({ name: '/' })
@@ -74,6 +74,16 @@ export default {
 </script>
 
 <style scoped lang="less" rel="stylesheet/less">
+  .title {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .title p {
+    font-size: 20px;
+    color: blue;
+  }
+
   .login {
     width: 100%;
     height: 100%;
@@ -88,5 +98,9 @@ export default {
     top: 50%;
     position: absolute;
     transform: translateY(-60%);
+  }
+
+  .submit-form {
+    text-align: center;
   }
 </style>

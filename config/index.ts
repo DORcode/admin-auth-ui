@@ -2,14 +2,24 @@
 
 const path = require('path')
 const sourceMap = process.env.NODE_ENV === "development";
+let baseUrl = 'http://localhost:8081'
+
+if (process.env.NODE_ENV === 'development') {
+  baseUrl = 'http://localhost:8081'
+} else if (process.env.NODE_ENV === 'production') {
+  baseUrl = 'http://localhost:8081'
+} else {
+  baseUrl = 'http://localhost:8081'
+}
 
 module.exports = {
   dev: {
+    env: require('.dev.env'),
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: baseUrl,
         changeOrigin: true, // 如果接口跨域，需要进行这个参数配置
         pathRewrite: {
           '^/api': '/api'
@@ -26,7 +36,7 @@ module.exports = {
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
     port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
-    autoOpenBrowser: false,
+    autoOpenBrowser: true,
     errorOverlay: true,
     notifyOnErrors: true,
     poll: false, // https://webpack.js.org/configuration/dev-server/#devserver-watchoptions-
@@ -76,7 +86,7 @@ module.exports = {
     Object.assign(config, {
       // 开发生产共同配置
       resolve: {
-        extensions: [".js", ".vue", ".json", ".ts", ".tsx"],
+        extensions: [".js", ".vue", ".json", ".ts", ".tsx", "less"],
         alias: {
           vue$: "vue/dist/vue.js",
           "@": path.resolve(__dirname, "./src"),
@@ -100,7 +110,11 @@ module.exports = {
     // 开启 CSS source maps?
     sourceMap: false,
     // css预设器配置项
-    loaderOptions: {},
+    loaderOptions: {
+      less: {
+        javascriptEnabled: true
+      }
+    },
     // 启用 CSS modules for all css / pre-processor files.
     modules: false
   },

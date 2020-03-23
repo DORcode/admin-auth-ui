@@ -3,38 +3,17 @@
     <Layout class="layout-page">
       <Sider ref="side1" class="layout-sider" :style="{overflow: 'auto'}" hide-trigger collapsible :collapsed-width="78" v-model="isCollapsed">
         <div class="layout-logo"></div>
-        <Menu active-name="1-2" theme="dark" width="auto" :class="menuitemClasses" :open-names="['1']">
-          <Submenu name="1">
+        <Menu ref="leftMenu" class="menu" :active-name="activeName" theme="dark" width="auto" :class="menuitemClasses" :open-names="['0']">
+          <Submenu v-for="(item, index) in menuList" @click.native="openPage(item, index)" :key="index" :name="index">
             <template slot="title">
               <Icon type="ios-navigate"></Icon>
-              Item 1
+              <span>{{ item.name }}</span>
             </template>
-            <MenuItem name="1-1">Option 1</MenuItem>
-            <MenuItem name="1-2">Option 2</MenuItem>
-            <MenuItem name="1-3">Option 3</MenuItem>
-            <MenuItem name="1-4">Option 4</MenuItem>
-            <MenuItem name="1-5">Option 5</MenuItem>
-            <MenuItem name="1-6">Option 6</MenuItem>
-          </Submenu>
-          <Submenu name="2">
-            <template slot="title">
-              <Icon type="ios-keypad"></Icon>
-              Item 2
-            </template>
-            <MenuItem name="2-1">Option 1</MenuItem>
-            <MenuItem name="2-2">Option 2</MenuItem>
-            <MenuItem name="2-3">Option 3</MenuItem>
-            <MenuItem name="2-4">Option 4</MenuItem>
-            <MenuItem name="2-5">Option 5</MenuItem>
-            <MenuItem name="2-6">Option 6</MenuItem>
-          </Submenu>
-          <Submenu name="3">
-            <template slot="title">
-              <Icon type="ios-analytics"></Icon>
-              Item 3
-            </template>
-            <MenuItem name="3-1">Option 1</MenuItem>
-            <MenuItem name="3-2">Option 2</MenuItem>
+            <MenuItem v-show="item.subMenus && item.subMenus.length" v-for="(sub, subidx) in item.subMenus"
+              :key="subidx" :name="index + '-' + subidx" @click.native="openPage(sub, subidx)">
+              <Icon type="ios-navigate"></Icon>
+              <span>{{ sub.name }}</span>
+            </MenuItem>
           </Submenu>
         </Menu>
       </Sider>
@@ -71,11 +50,11 @@
         <Content class="main-content">
           <Layout class="main-layout">
             <div class="open-nav">
-              <tags-nav :list="openedNavList"></tags-nav>
+              <tags-nav :currentIndex="currentIndex" :transLateX="transLateX" @selectTags="selectTags" @close="close" @tagScroll="tagScroll" :list="openedNavList"></tags-nav>
             </div>
             <Content class="content">
-              显示主界面
               <keep-alive>
+                显示主界面
                 <router-view/>
               </keep-alive>
             </Content>
@@ -110,48 +89,35 @@ export default class Home extends Vue {
 
   isFullScreen = false
 
+  activeName = ''
+
+  currentIndex = 0
+  transLateX = 0
+
+  menuList = [
+    {
+      name: '管理',
+      path: '',
+      type: 1,
+      subMenus: [
+        {
+          name: '系统管理',
+          path: '/sys/manage/system',
+          type: 2
+        },
+        {
+          name: '用户管理',
+          path: '/sys/manage/user',
+          type: 3
+        }
+      ]
+    }
+  ]
+
   openedNavList = [
     {
-      name: '标签1'
-    }, {
-      name: '标签2'
-    }, {
-      name: '标签3'
-    },
-    {
-      name: '标签4'
-    }, {
-      name: '标签5'
-    }, {
-      name: '标签6'
-    },
-    {
-      name: '标签7'
-    }, {
-      name: '标签8'
-    }, {
-      name: '标签9'
-    },
-    {
-      name: '标签10'
-    }, {
-      name: '标签11'
-    }, {
-      name: '标签1标签1标签12'
-    },
-    {
-      name: '标签13'
-    }, {
-      name: '标签14'
-    }, {
-      name: '标签15'
-    },
-    {
-      name: '标签16'
-    }, {
-      name: '标签17'
-    }, {
-      name: '标签18'
+      name: '首页',
+      path: '/'
     }]
 
   breadlist = [
@@ -160,9 +126,138 @@ export default class Home extends Vue {
     { name: 'Layout', icon: '' }
   ]
 
+  isMenuShow (item: any) {
+    if (item.type === 1 && item.type === 2) {
+      return true
+    } else {
+      return false
+    }
+  }
+  // 剩下滚动， 使用父去调用子方法，来滚动，根据之间的距离，来调用，滚动的距离即可
+
+  // 获取树形多级，组合为active-name,用于高量menu
+  getActiveName (item: any) {
+    let name = ''
+    for (let i = 0; i < this.menuList.length; i++) {
+      const sub = this.menuList[i].subMenus || []
+      for (let j = 0; j < sub.length; j++) {
+        if (sub[j].path === item.path) {
+          name = i + '-' + j
+        }
+      }
+    }
+    this.activeName = name
+    return name
+  }
+
   collapsedSider () {
     const side1: any = this.$refs.side1
     side1.toggleCollapse()
+  }
+
+  isOpened (item: any): boolean {
+    let flag = false
+    this.openedNavList.forEach(
+      (val) => {
+        if (item.path === val.path) {
+          flag = true
+        }
+      }
+    )
+    return flag
+  }
+
+  openPage (item: any, index: number) {
+    // 如果已经打开，则需要滚动到打开这个tag
+    if (this.isOpened(item)) {
+      // 当前点击的不是已经打开的
+      if (item.path !== this.openedNavList[this.currentIndex]) {
+        this.currentIndex = this.openedNavList.indexOf(item)
+      }
+    } else {
+      // 未打开过，跳转
+      this.$router.push(item.path)
+      this.openedNavList.push(item)
+      this.currentIndex = this.openedNavList.length - 1
+    }
+
+    this.getActiveName(item)
+  }
+
+  tagScroll (num: number) {
+    this.transLateX = num
+  }
+
+  selectTags (index: number) {
+    console.log('当前' + index)
+    // this.currentIndex = index
+    this.openPage(this.openedNavList[index], index)
+    // 当tag-nav 选择了后，从menu列表中得到activename的名称
+  }
+
+  close (flag: number) {
+    if (flag === -1) {
+      this.closeAll()
+    } else if (flag === -2) {
+      this.closeOther()
+    } else {
+      this.closeOne(flag)
+    }
+  }
+
+  closeOne (index: number) {
+    const lastIndex = this.currentIndex
+    this.openedNavList.splice(index, 1)
+    if (index === this.currentIndex) {
+      if (this.openedNavList.length > 1) {
+        this.currentIndex = index - 1
+      } else {
+        this.currentIndex = 0
+      }
+      this.getActiveName(this.openedNavList[this.currentIndex])
+    }
+
+    // if (index > ((this.openedNavList.length - 1) / 2)) {
+    //   this.handleScroll(-240)
+    // } else {
+    //   this.handleScroll(240)
+    // }
+
+    if (lastIndex !== this.currentIndex) {
+      this.$router.push(this.openedNavList[this.currentIndex].path)
+    }
+  }
+
+  closeAll () {
+    const lastIndex = this.currentIndex
+    console.log('关闭全部打开tags')
+    this.openedNavList.splice(1, this.openedNavList.length - 1)
+    this.currentIndex = 0
+    this.transLateX = 0
+
+    if (lastIndex !== this.currentIndex) {
+      this.$router.push(this.openedNavList[this.currentIndex].path)
+    }
+    this.getActiveName(this.openedNavList[this.currentIndex])
+  }
+
+  closeOther () {
+    const lastIndex = this.currentIndex
+    if (this.currentIndex === 0) {
+      this.openedNavList.splice(1, this.openedNavList.length - 1)
+      this.currentIndex = 0
+    } else if (this.currentIndex === this.openedNavList.length - 1) {
+      this.openedNavList.splice(1, this.openedNavList.length - 2)
+      this.currentIndex = 1
+    } else {
+      this.openedNavList.splice(this.currentIndex + 1, this.openedNavList.length - 1)
+      this.openedNavList.splice(1, this.currentIndex - 1)
+      this.currentIndex = 1
+    }
+    this.getActiveName(this.openedNavList[this.currentIndex])
+    if (lastIndex !== this.currentIndex) {
+      this.$router.push(this.openedNavList[this.currentIndex].path)
+    }
   }
 
   handleTabRemove (name: any) {

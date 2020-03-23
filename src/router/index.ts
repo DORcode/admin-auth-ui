@@ -5,6 +5,7 @@ import User from '../views/User.vue'
 import Role from '../views/Role.vue'
 import Permission from '../views/Permission.vue'
 import sessionStore from '@/util/sessionstore'
+import msg from '@/util/message'
 
 Vue.use(VueRouter)
 
@@ -12,7 +13,8 @@ const routes = [
   {
     path: '/login',
     name: '登录页面',
-    isNeedLogin: false,
+    isNeedLogin: false, // 是否需要登录
+    access: false, // 是否可以访问， true:可以访问, false: 不可以访问
     component: () => import('../views/login/Login.vue')
   },
   {
@@ -93,8 +95,22 @@ function isNeedLogin (item: any): boolean {
   return flag
 }
 
+function isAccess (item: any): boolean {
+  // 和localStore中的tree比较，如果存在，则可以访问
+  const menus = JSON.parse(localStorage.getItem('menus') || '[]')
+  let flag = false
+  menus.forEach(
+    (val: any) => {
+      if (val.path === item.path) {
+        flag = true
+      }
+    }
+  )
+
+  return flag
+}
+
 router.beforeEach((to, from, next) => {
-  console.log(isNeedLogin(to))
   // 获取目标页面是否需要登录
   if (isNeedLogin(to)) {
     const expire = Number(sessionStore.get('tokenExpireTime'))
@@ -103,7 +119,13 @@ router.beforeEach((to, from, next) => {
     if (expire < new Date().getTime()) {
       router.push({ path: '/login' })
     } else {
-      next()
+      // 有访问的权限
+      if (isAccess(to)) {
+        next()
+      } else {
+        next(false)
+        msg.warning('无访问权限!')
+      }
     }
   } else {
     next()
