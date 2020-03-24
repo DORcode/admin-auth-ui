@@ -3,10 +3,11 @@
     <Layout class="layout-page">
       <Sider ref="side1" class="layout-sider" :style="{overflow: 'auto'}" hide-trigger collapsible :collapsed-width="78" v-model="isCollapsed">
         <div class="layout-logo"></div>
-        <Menu ref="leftMenu" class="menu" :active-name="activeName" theme="dark" width="auto" :class="menuitemClasses" :open-names="['0']">
+        <Menu ref="leftMenu" class="menu" :accordion="true" :active-name="activeName" theme="dark" width="auto"
+          :class="menuitemClasses" :open-names="['1']">
           <Submenu v-for="(item, index) in menuList" @click.native="openPage(item, index)" :key="index" :name="index">
             <template slot="title">
-              <Icon type="ios-navigate"></Icon>
+              <Icon :type="isCustomIcon(item) ? item.icon : 'ios-navigate'"></Icon>
               <span>{{ item.name }}</span>
             </template>
             <MenuItem v-show="item.subMenus && item.subMenus.length" v-for="(sub, subidx) in item.subMenus"
@@ -38,7 +39,7 @@
             </Dropdown>
             <Dropdown class="manage-buttons">
               <a href="javascript:void(0)" style="font-size: 20px">
-                我
+                <Icon :size="35" type="ios-contact" />
                 <Icon :size="25" type="md-arrow-dropdown"/>
               </a>
               <DropdownMenu slot="list">
@@ -50,7 +51,7 @@
         <Content class="main-content">
           <Layout class="main-layout">
             <div class="open-nav">
-              <tags-nav :currentIndex="currentIndex" :transLateX="transLateX" @selectTags="selectTags" @close="close" @tagScroll="tagScroll" :list="openedNavList"></tags-nav>
+              <tags-nav ref="tagsNav" :currentIndex="currentIndex" :transLateX="transLateX" @selectTags="selectTags" @close="close" @tagScroll="tagScroll" :list="openedNavList"></tags-nav>
             </div>
             <Content class="content">
               <keep-alive>
@@ -71,6 +72,8 @@ import { Vue, Component, Watch, Prop, PropSync, Ref, Emit, Inject, Model, Provid
 import TagsNav from '@/components/tags-nav/tags-nav.vue'
 import BreadNav from '@/components/bread-nav/bread-nav.vue'
 import screenfull from 'screenfull'
+import localStore from '../../util/localstore'
+import sessionStore from '../../util/sessionstore'
 
 declare module 'vue/types/vue' {
     interface Vue {
@@ -90,14 +93,16 @@ export default class Home extends Vue {
   isFullScreen = false
 
   activeName = ''
+  openName = 0
 
   currentIndex = 0
   transLateX = 0
 
-  menuList = [
+  menuList: any = localStore.get('menus') || [
     {
       name: '管理',
       path: '',
+      icon: 'ios-home',
       type: 1,
       subMenus: [
         {
@@ -111,20 +116,45 @@ export default class Home extends Vue {
           type: 3
         }
       ]
+    },
+    {
+      name: '股票数据',
+      path: '',
+      icon: 'ios-home',
+      type: 1,
+      subMenus: [
+        {
+          name: '角色管理',
+          path: '/sys/manage/role',
+          type: 2
+        },
+        {
+          name: '权限管理',
+          path: '/sys/manage/permission',
+          type: 3
+        }
+      ]
     }
   ]
 
   openedNavList = [
     {
       name: '首页',
-      path: '/'
+      path: '/',
+      icon: 'ios-home'
     }]
 
   breadlist = [
-    { name: 'Home', icon: 'ios-home-outline' },
-    { name: 'Components', icon: 'logo-buffer' },
-    { name: 'Layout', icon: '' }
+    { name: '首页', path: '/', icon: 'ios-home' }
   ]
+
+  isCustomIcon (item: any) {
+    if (item.icon) {
+      return true
+    } else {
+      return false
+    }
+  }
 
   isMenuShow (item: any) {
     if (item.type === 1 && item.type === 2) {
@@ -137,11 +167,15 @@ export default class Home extends Vue {
 
   // 获取树形多级，组合为active-name,用于高量menu
   getActiveName (item: any) {
+    this.breadlist.splice(1, this.breadlist.length)
     let name = ''
     for (let i = 0; i < this.menuList.length; i++) {
       const sub = this.menuList[i].subMenus || []
+      this.openName = i
       for (let j = 0; j < sub.length; j++) {
         if (sub[j].path === item.path) {
+          this.breadlist.push(this.menuList[i])
+          this.breadlist.push(sub[j])
           name = i + '-' + j
         }
       }
@@ -167,7 +201,8 @@ export default class Home extends Vue {
     return flag
   }
 
-  openPage (item: any, index: number) {
+  openPage (item: any) {
+    const lastIndex = this.currentIndex
     // 如果已经打开，则需要滚动到打开这个tag
     if (this.isOpened(item)) {
       // 当前点击的不是已经打开的
@@ -180,8 +215,16 @@ export default class Home extends Vue {
       this.openedNavList.push(item)
       this.currentIndex = this.openedNavList.length - 1
     }
-
+    let num = 0
+    if (this.currentIndex > lastIndex) {
+      num = this.currentIndex - lastIndex
+    } else {
+      num = this.currentIndex - (lastIndex)
+    }
     this.getActiveName(item)
+    // scroll tags
+    const tagsNav: any = this.$refs.tagsNav
+    tagsNav.scrollNum(num)
   }
 
   tagScroll (num: number) {
@@ -189,9 +232,8 @@ export default class Home extends Vue {
   }
 
   selectTags (index: number) {
-    console.log('当前' + index)
     // this.currentIndex = index
-    this.openPage(this.openedNavList[index], index)
+    this.openPage(this.openedNavList[index])
     // 当tag-nav 选择了后，从menu列表中得到activename的名称
   }
 
@@ -216,12 +258,6 @@ export default class Home extends Vue {
       }
       this.getActiveName(this.openedNavList[this.currentIndex])
     }
-
-    // if (index > ((this.openedNavList.length - 1) / 2)) {
-    //   this.handleScroll(-240)
-    // } else {
-    //   this.handleScroll(240)
-    // }
 
     if (lastIndex !== this.currentIndex) {
       this.$router.push(this.openedNavList[this.currentIndex].path)
@@ -284,6 +320,10 @@ export default class Home extends Vue {
   }
 
   logout () {
+    this.$router.push({ path: '/login' })
+    localStore.remove('menus')
+    sessionStore.remove('token')
+    sessionStore.remove('tokenExpireTime')
     console.log('退出登录')
   }
 

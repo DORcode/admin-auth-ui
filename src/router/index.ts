@@ -1,18 +1,17 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/home/Home.vue'
-import User from '../views/User.vue'
-import Role from '../views/Role.vue'
-import Permission from '../views/Permission.vue'
 import sessionStore from '@/util/sessionstore'
 import msg from '@/util/message'
+import localStore from '../util/localstore'
 
 Vue.use(VueRouter)
 
-const routes = [
+export const routes = [
   {
     path: '/login',
     name: '登录页面',
+    icon: '',
     isNeedLogin: false, // 是否需要登录
     access: false, // 是否可以访问， true:可以访问, false: 不可以访问
     component: () => import('../views/login/Login.vue')
@@ -20,37 +19,44 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    icon: '',
+    component: () => import('../views/home/Home.vue')
   },
   {
     path: '/about',
     name: 'About',
+    icon: '',
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   },
   {
     path: '/sys/manage',
     name: '系统管理',
+    icon: '',
     component: Home,
     children: [
       {
         path: 'system',
         name: '应用',
+        icon: '',
         component: () => import('../views/app/System.vue')
       },
       {
         path: 'user',
         name: '用户',
-        component: User
+        icon: '',
+        component: () => import('../views/User.vue')
       },
       {
         path: 'role',
         name: '角色',
-        component: Role
+        icon: '',
+        component: () => import('../views/Role.vue')
       },
       {
         path: 'permission',
         name: '权限',
-        component: Permission
+        icon: '',
+        component: () => import('../views/Permission.vue')
       }
     ]
   },

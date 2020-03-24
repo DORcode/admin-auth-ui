@@ -5,8 +5,8 @@
         <p>登录 </p>
       </div>
       <Form class="login-form" ref="formInline" :model="formInline" :rules="ruleInline">
-        <FormItem prop="user">
-          <Input type="text" placeholder="输入帐户" style="width: auto" v-model="formInline.user">
+        <FormItem prop="username">
+          <Input type="text" placeholder="输入帐户" style="width: auto" v-model="formInline.username">
             <Icon type="ios-person-outline" slot="prefix" />
           </Input>
         </FormItem>
@@ -26,6 +26,7 @@
 <script type="text/ecmascript-6">
 import Api from '@/api/api'
 import sessionStore from '@/util/sessionstore'
+import getMenus from '@/util/permission'
 
 export default {
   components: {
@@ -33,11 +34,11 @@ export default {
   data () {
     return {
       formInline: {
-        user: '',
+        username: '',
         password: ''
       },
       ruleInline: {
-        user: [
+        username: [
           { required: true, message: '请输入帐户', trigger: 'blur' }
         ],
         password: [
@@ -57,8 +58,8 @@ export default {
               if (res && res.data) {
                 sessionStore.set('token', res.data.token)
                 sessionStore.set('tokenExpireTime', res.data.tokenExpireTime)
-                this.$router.push({ name: '/' })
                 this.$Message.success(res.data.msg)
+                getMenus()
               } else {
                 this.$Message.error(res.data.msg)
               }

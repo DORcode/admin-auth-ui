@@ -65,12 +65,15 @@ const checkCode = (res: any) => {
   return res
 }
 
-const post = (url: string, data: any) => {
+const post = (url: string, data?: any) => {
 //   const token = sessionstore.get('token')
 //   let header = {}
 //   if(sessionstore.get('token')) {
 //     header = {'token': sessionstore.get('token')}
 //   }
+  if (!data) {
+    data = {}
+  }
 
   return axios({
     method: 'post',
@@ -120,7 +123,7 @@ const postProgress = (url: string, data: any, config: any) => {
   )
 }
 
-const get = (url: string, params: any) => {
+const get = (url: string, params?: any) => {
   return axios({
     method: 'get',
     url,
@@ -158,19 +161,24 @@ const del = (url: string) => {
 
 const Login = {
   login (data: any) {
-    return post('/api/login', data)
+    return post('/api/auth/login', data)
+  },
+
+  logout () {
+    return get('/api/auth/logout')
   }
 }
 
 const Permission = {
-  menus (data: any) {
-    return post('/api/syspermission/menus', data)
+  menus () {
+    return post('/api/syspermission/menus')
   }
 
 }
 
 const APIS = {
-  ...Login
+  ...Login,
+  ...Permission
 }
 
 export default APIS
