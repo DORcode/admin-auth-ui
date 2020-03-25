@@ -1,12 +1,10 @@
 import axios from 'axios'
 import sessionstore from '../util/sessionstore'
-import msg from '@/util/message'
+import msg from '../util/message'
 import qs from 'qs'
 
 const TIMEOUT = 600000
 const instance = axios.create()
-
-// 使用 axios 发送表单数据 ('content-type': 'application/x-www-form-urlencoded')
 
 instance.interceptors.request.use(
   config => {
@@ -28,6 +26,7 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   response => {
     const res = response.data
+    console.log(res)
     // 根据编号或其它状态来判断问题，并提醒
     return res
   },
@@ -66,35 +65,37 @@ const checkCode = (res: any) => {
 }
 
 const post = (url: string, data?: any) => {
-//   const token = sessionstore.get('token')
-//   let header = {}
-//   if(sessionstore.get('token')) {
-//     header = {'token': sessionstore.get('token')}
-//   }
   if (!data) {
     data = {}
   }
 
-  return axios({
+  return instance({
     method: 'post',
     url: url,
-    data: data,
-    timeout: TIMEOUT
+    data: JSON.stringify(data),
+    timeout: TIMEOUT,
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With, token'
+    }
   }).then(
     (response) => {
       return response
     }
   ).catch(
     (error) => {
-      console.log(error.response.data)
-      msg.error(error.response.data.msg)
+      console.log(error.response)
+      if (error.response && error.response.data && error.response.data.msg) {
+        msg.error(error.response.data.msg)
+      }
     }
   )
 }
 
 const postForm = (url: string, data: any) => {
   return axios({
-    method: 'get',
+    method: 'post',
     url,
     data: qs.stringify(data),
     timeout: TIMEOUT,

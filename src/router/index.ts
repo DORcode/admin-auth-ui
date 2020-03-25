@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/home/Home.vue'
-import sessionStore from '@/util/sessionstore'
-import msg from '@/util/message'
+import sessionStore from '../util/sessionstore'
+import msg from '../util/message'
 import localStore from '../util/localstore'
 
 Vue.use(VueRouter)
@@ -57,6 +57,12 @@ export const routes = [
         name: '权限',
         icon: '',
         component: () => import('../views/Permission.vue')
+      },
+      {
+        path: 'table',
+        name: '分页',
+        isNeedLogin: false,
+        component: () => import('../components/table/table-page.vue')
       }
     ]
   },
@@ -65,6 +71,12 @@ export const routes = [
     name: '已打开',
     isNeedLogin: true,
     component: () => import(/* webpackChunkName: "tags" */ '../components/tags-nav/tags-nav.vue')
+  },
+  {
+    path: '/table',
+    name: '分页',
+    isNeedLogin: false,
+    component: () => import('../components/table/table-page.vue')
   },
   {
     path: '/401',

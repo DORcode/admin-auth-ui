@@ -4,7 +4,7 @@
       <Sider ref="side1" class="layout-sider" :style="{overflow: 'auto'}" hide-trigger collapsible :collapsed-width="78" v-model="isCollapsed">
         <div class="layout-logo"></div>
         <Menu ref="leftMenu" class="menu" :accordion="true" :active-name="activeName" theme="dark" width="auto"
-          :class="menuitemClasses" :open-names="['1']">
+          :class="menuitemClasses" :open-names="[openName]">
           <Submenu v-for="(item, index) in menuList" @click.native="openPage(item, index)" :key="index" :name="index">
             <template slot="title">
               <Icon :type="isCustomIcon(item) ? item.icon : 'ios-navigate'"></Icon>
@@ -39,7 +39,7 @@
             </Dropdown>
             <Dropdown class="manage-buttons">
               <a href="javascript:void(0)" style="font-size: 20px">
-                <Icon :size="35" type="ios-contact" />
+                <Avatar icon="ios-person" size="large" />
                 <Icon :size="25" type="md-arrow-dropdown"/>
               </a>
               <DropdownMenu slot="list">
@@ -76,9 +76,9 @@ import localStore from '../../util/localstore'
 import sessionStore from '../../util/sessionstore'
 
 declare module 'vue/types/vue' {
-    interface Vue {
-        [key: string]: any;
-    }
+  interface Vue {
+    [key: string]: any;
+  }
 }
 
 @Component({
@@ -132,6 +132,11 @@ export default class Home extends Vue {
           name: '权限管理',
           path: '/sys/manage/permission',
           type: 3
+        },
+        {
+          name: '分页组件',
+          path: '/sys/manage/table',
+          type: 3
         }
       ]
     }
@@ -171,9 +176,9 @@ export default class Home extends Vue {
     let name = ''
     for (let i = 0; i < this.menuList.length; i++) {
       const sub = this.menuList[i].subMenus || []
-      this.openName = i
       for (let j = 0; j < sub.length; j++) {
         if (sub[j].path === item.path) {
+          this.openName = i
           this.breadlist.push(this.menuList[i])
           this.breadlist.push(sub[j])
           name = i + '-' + j
@@ -217,7 +222,7 @@ export default class Home extends Vue {
     }
     let num = 0
     if (this.currentIndex > lastIndex) {
-      num = this.currentIndex - lastIndex
+      num = this.currentIndex - lastIndex + 1
     } else {
       num = this.currentIndex - (lastIndex)
     }

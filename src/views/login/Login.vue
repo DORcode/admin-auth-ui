@@ -55,13 +55,14 @@ export default {
           // 登录验证
           Api.login(this.formInline).then(
             res => {
-              if (res && res.data) {
-                sessionStore.set('token', res.data.token)
+              console.log(res)
+              if (res.data && res.data.success) {
+                sessionStore.set('token', res.token)
                 sessionStore.set('tokenExpireTime', res.data.tokenExpireTime)
                 this.$Message.success(res.data.msg)
                 getMenus()
               } else {
-                this.$Message.error(res.data.msg)
+                this.$Message.error(res.msg)
               }
             }
           )
