@@ -132,11 +132,6 @@ export default class Home extends Vue {
           name: '权限管理',
           path: '/sys/manage/permission',
           type: 3
-        },
-        {
-          name: '分页组件',
-          path: '/sys/manage/table',
-          type: 3
         }
       ]
     }

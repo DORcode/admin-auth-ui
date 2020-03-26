@@ -1,18 +1,13 @@
 <template>
   <div id="app">
-    <p>用户管理</p>
+
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Watch, Prop, Emit, Inject, Model, Provide } from 'vue-property-decorator'
-@Component({
-  components: {}
-})
+@Component({})
 export default class App extends Vue {
-  mounted () {
-    console.log()
-  }
 }
 </script>
 

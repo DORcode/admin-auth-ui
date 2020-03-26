@@ -44,7 +44,7 @@ export const routes = [
         path: 'user',
         name: '用户',
         icon: '',
-        component: () => import('../views/User.vue')
+        component: () => import('../views/user/User.vue')
       },
       {
         path: 'role',
