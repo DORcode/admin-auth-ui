@@ -2,3 +2,7 @@ declare module '*.vue' {
   import Vue from 'vue'
   export default Vue
 }
+
+declare module 'view-design/dist/locale/*' {
+  export const viewLocale: any
+}

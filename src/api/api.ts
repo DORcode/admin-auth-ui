@@ -26,43 +26,20 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   response => {
     const res = response.data
+    msg.info(res.msg)
     console.log(res)
-    // 根据编号或其它状态来判断问题，并提醒
     return res
   },
   error => {
-    console.log('err' + error) // for debug
+    if (error.response.status === 500) {
+      msg.error('服务端异常')
+    } else {
+      msg.error('请求异常')
+    }
+    console.log(error) // for debug
     return Promise.reject(error)
   }
 )
-
-const checkStatus = (response: any) => {
-  // console.log(JSON.stringify(response))
-  if (response.status === 200 || response.status === 304) {
-    if (response.data && response.data.success) {
-      return response
-    }
-  }
-  return {
-    data: {
-      error: {
-        code: response.data.error.code,
-        msg: response.data.error.msg,
-        status: response.status
-      }
-    }
-  }
-}
-const checkCode = (res: any) => {
-  // console.log('checkCode.res=' + JSON.stringify(res.data.message))
-  if (res.status !== 200) {
-    if ((res.data) && (res.data.error)) {
-      console.log('res.error = ' + JSON.stringify(res.data.error))
-    }
-    // console.log(res.data.message)
-  }
-  return res
-}
 
 const post = (url: string, data?: any) => {
   if (!data) {
@@ -107,7 +84,9 @@ const postForm = (url: string, data: any) => {
   ).catch(
     (error) => {
       console.log(error.response.data)
-      msg.error(error.response.data.msg)
+      if (error.response && error.response.data && error.response.data.msg) {
+        msg.error(error.response.data.msg)
+      }
     }
   )
 }
@@ -119,7 +98,9 @@ const postProgress = (url: string, data: any, config: any) => {
     }
   ).catch(
     (error) => {
-      msg.error(error.response.data.msg)
+      if (error.response && error.response.data && error.response.data.msg) {
+        msg.error(error.response.data.msg)
+      }
     }
   )
 }
@@ -138,7 +119,9 @@ const get = (url: string, params?: any) => {
   ).catch(
     (error) => {
       console.log(error.response.data)
-      msg.error(error.response.data.msg)
+      if (error.response && error.response.data && error.response.data.msg) {
+        msg.error(error.response.data.msg)
+      }
     }
   )
 }
@@ -151,11 +134,13 @@ const del = (url: string) => {
     headers: { 'X-Requested-With': 'XMLHttpRequest' }
   }).then(
     (response) => {
-      return checkStatus(response)
+      return response
     }
   ).catch(
     (error) => {
-      msg.error(error.response.data.msg)
+      if (error.response && error.response.data && error.response.data.msg) {
+        msg.error(error.response.data.msg)
+      }
     }
   )
 }
@@ -170,6 +155,39 @@ const Login = {
   }
 }
 
+// 用户管理
+const User = {
+  selectSysUsers (data: any) {
+    return post('/api/sysuser/selectSysUsers', data)
+  },
+
+  deleteSysUserById (data: any) {
+    return post('/api/sysuser/deleteSysUserById', data)
+  },
+
+  deleteSysUsers (data: any) {
+    return post('/api/sysuser/deleteSysUsers', data)
+  },
+
+  updateSysUser (data: any) {
+    return post('/api/sysuser/deleteSysUsers', data)
+  },
+
+  insertSysUser (data: any) {
+    return post('/api/sysuser/insertSysUser', data)
+  },
+
+  insertSysUsers (data: any) {
+    return post('/api/sysuser/insertSysUsers', data)
+  }
+
+}
+
+// 角色管理
+const Role = {
+    
+}
+
 const Permission = {
   menus () {
     return post('/api/syspermission/menus')
@@ -179,6 +197,8 @@ const Permission = {
 
 const APIS = {
   ...Login,
+  ...User,
+  ...Role,
   ...Permission
 }
 

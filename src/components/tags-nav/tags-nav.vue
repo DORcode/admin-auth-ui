@@ -56,28 +56,32 @@ export default class TagsNav extends Vue {
   @Prop({ type: Number })
   transLateX!: number
 
-  handleClose (index: number) {
-    const lastIndex = this.currentIndex
-    this.list.splice(index, 1)
-    if (index === this.currentIndex) {
-      if (this.list.length > 1) {
-        this.currentIndex = index - 1
-      } else {
-        this.currentIndex = 0
-      }
-    }
+  // 关闭，点击menu，点击tag,从浏览器打开一个页面
+  // handleClose (index: number) {
+  //   const item = this.list[this.currentIndex]
+  //   const lastIndex = this.currentIndex
+  //   this.list.splice(index, 1)
+  //   if (index > ((this.list.length - 1) / 2)) {
+  //     this.handleScroll(-240)
+  //   } else {
+  //     this.handleScroll(240)
+  //   }
 
-    if (index > ((this.list.length - 1) / 2)) {
-      this.handleScroll(-240)
-    } else {
-      this.handleScroll(240)
-    }
+  //   if (lastIndex !== this.currentIndex) {
+  //     this.$router.push(this.list[this.currentIndex].path)
+  //   }
+  //   if (index === this.currentIndex) {
+  //     if (this.list.length > 1) {
+  //       this.handleClick(index - 1)
+  //       // this.currentIndex
+  //     } else {
+  //       this.handleClick(0)
+  //       // this.currentIndex = 0
+  //     }
+  //   }
+  // }
 
-    if (lastIndex !== this.currentIndex) {
-      this.$router.push(this.list[this.currentIndex].path)
-    }
-  }
-
+  // 点击tag打开页面
   @Emit('selectTags')
   handleClick (index: number) {
     // console.log('点击 ' + index)
@@ -91,14 +95,12 @@ export default class TagsNav extends Vue {
     return index
   }
 
+  // 滑动tag
   @Emit('tagScroll')
   handleScroll (num: number): number {
     const carousel: any = this.$refs.carouselContent
     const scrollWidth = carousel.scrollWidth
     const clientWidth = carousel.clientWidth
-    // console.log(this.transLateX)
-    // console.log(clientWidth)
-    // console.log(scrollWidth)
 
     if (scrollWidth > clientWidth) {
       if (num === 240) {
@@ -119,6 +121,7 @@ export default class TagsNav extends Vue {
     }
   }
 
+  // 父页面调用该访求
   scrollNum (num: number) {
     const len = Math.abs(num)
     for (let i = 0; i <= len; i++) {

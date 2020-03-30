@@ -1,37 +1,64 @@
 <template>
   <div id="app">
     <!-- 用来实现选中列进行显示 -->
-    <Row>
-      <h3>{{tableTitle}}</h3>
+    <Row align="middle">
+      <Col span="8">
+        <h4>{{tableTitle}}</h4>
+      </Col>
+      <Col class="header-row">
+        <Dropdown class="manage-buttons">
+          <a href="javascript:void(0)" style="font-size: 20px">
+            <Icon :size="25" type="md-arrow-dropdown"/>
+          </a>
+          <DropdownMenu slot="list">
+            <DropdownItem >
+              <Button class="btn btn-add" :disabled="!isAddable" icon="ios-add" type="info" size="default" @click="add">{{$t('add')}}</Button>
+            </DropdownItem>
+            <DropdownItem >
+              <Button class="btn btn-delete" :disabled="!isDeleteable" icon="ios-remove" type="error" size="default" @click="deleteAll">{{$t('deleteAll')}}</Button>
+            </DropdownItem>
+            <DropdownItem >
+              <Upload :action="importAction" style="width:110px;heigth:32px;">
+                <Button class="btn" type="info" icon="ios-arrow-dropup" size="default" @click="importData">{{$t('importData')}}</Button>
+              </Upload>
+            </DropdownItem>
+            <DropdownItem >
+              <Button class="btn" type="info" icon="ios-arrow-down" size="default" @click="exportData">{{$t('exportData')}}</Button>
+            </DropdownItem>
+            <DropdownItem >
+              <Button class="btn" type="success" icon="ios-download" size="small" @click="openDrawer = true">{{$t('headerTitile')}}</Button>
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+        <!-- <Button class="btn btn-add" :disabled="!isAddable" icon="ios-add" type="info" size="default" @click="add">{{$t('add')}}</Button>
+        <Button class="btn btn-delete" :disabled="!isDeleteable" icon="ios-remove" type="error" size="default" @click="deleteAll">{{$t('deleteAll')}}</Button>
+        <Upload :action="importAction" style="width:110px;heigth:32px;">
+          <Button class="btn" type="info" icon="ios-arrow-dropup" size="default" @click="importData">{{$t('importData')}}</Button>
+        </Upload>
+        <Button class="btn" type="info" icon="ios-arrow-down" size="default" @click="exportData">{{$t('exportData')}}</Button>
+        <Button class="btn" type="success" icon="ios-download" size="small" @click="openDrawer = true">{{$t('headerTitile')}}</Button> -->
+      </Col>
     </Row>
-    <Divider/>
-    <Row>
-      <Row class="header-row">
-        <Button class="btn btn-add" :disabled="!isAddable" icon="ios-add" type="info" size="default" @click="addModal=true">新增</Button>
-        <Button class="btn btn-delete" icon="ios-remove" type="error" size="default" @click="deleteAll">删除全部</Button>
-        <Button class="btn" type="info" icon="ios-arrow-dropup" size="default" @click="importData">导入数据</Button>
-        <Button class="btn" type="info" icon="ios-arrow-down" size="default" @click="exportData">导出数据</Button>
-        <Button class="btn" type="success" icon="ios-download" size="small" @click="openDrawer = true">表头</Button>
-      </Row>
-    </Row>
+    <Divider style="margin-top:3px;margin-bottom:3px" />
     <Row class = "table-content">
       <Drawer :inner="true" :transfer="false" :closable="false" v-model="openDrawer">
         <div slot="header">
           <Icon type="md-aperture" :size="18"></Icon>
-          <b>表头选择</b>
+          <b>{{$t('headerSelect')}}</b>
         </div>
         <Checkbox-group v-for="item in columnsList" :key="item.key" v-model="tableColumnsChecked" @on-change="changeTableColumns">
           <Checkbox :label="item.key">{{ item.title }}</Checkbox>
         </Checkbox-group>
       </Drawer>
-      <Table ref="table" :loading="loading" :border="showBorder" :data="dataList"
+      <Table ref="tableData" :loading="loading" :border="showBorder" :data="dataList"
         :columns="showColumnsList"
+        min-height="500"
         @on-select-cancel="selectCancel"
         @on-select-all-cancel="selectAllCancel"
         @on-selection-change="selectChange"
         @on-select-all="selectAll"
         @on-sort-change="sortChange">
-        <template slot-scope="{ row, index }" slot="action" v-show="isShowAction">
+        <template slot-scope="{ row, index }" slot="action" v-show="isShowActionTemplate">
           <Poptip confirm trigger="click" title="Title" content="content" >
             <Button :disabled="!isEditable" type="primary" size="small" @click="edit(index)" style="margin-right: 5px">Edit</Button>
           </Poptip>
@@ -39,20 +66,21 @@
             <Button :disabled="!isDeleteable" type="error" size="small" @click="remove(index)">Delete</Button>
           </Poptip>
         </template>
+        <slot name="action"></slot>
       </Table>
     </Row>
     <div v-show="isShowPage" style="margin: 10px;overflow: hidden">
         <div style="float: right;">
-            <Page :total="total" :current="current" @on-change="changePage"></Page>
+            <Page :total="total" :current="current"
+            :page-size="size"
+            :page-size-opts="pageSizeOpts"
+            @on-change="changePage"
+            @on-page-size-change="changePageSize"
+            show-sizer
+            show-total></Page>
         </div>
     </div>
-    <Modal
-      v-model="addModal"
-      title="新增"
-      @on-ok="okAdd"
-      @on-cancel="cancel">
-      <slot></slot>
-    </Modal>
+    <slot name="modal"></slot>
   </div>
 </template>
 
@@ -64,8 +92,6 @@ import { Vue, Component, Watch, Prop, Emit, Inject, Model, Provide } from 'vue-p
 })
 export default class TablePage extends Vue {
   openDrawer = false
-
-  addModal = false
 
   @Prop({ type: String })
   tableTitle!: string
@@ -86,11 +112,19 @@ export default class TablePage extends Vue {
   @Prop({ type: Boolean, required: false, default: true })
   showBorder!: boolean
 
-  @Prop({ required: false, default: false })
+  @Prop({ required: false, default: true })
   isShowPage!: boolean
 
+  // 是否有Action列
   @Prop({ required: false, default: true })
   isShowAction!: boolean
+
+  // 是否显示Action模板
+  @Prop({ required: false, default: true })
+  isShowActionTemplate!: boolean
+
+  @Prop({ required: true})
+  importAction!: string
 
   // 分页数据
   @Prop()
@@ -104,8 +138,14 @@ export default class TablePage extends Vue {
   @Prop({ default: 0 })
   total!: number
 
-  @Prop({ required: false, default: 0 })
+  @Prop({ required: false, default: 10 })
   current!: number
+
+  @Prop({ required: false, default: 1 })
+  size!: number
+
+  @Prop({ required: false, default: () => [10, 20, 50, 100] })
+  pageSizeOpts!: number[]
 
   @Prop({ required: false, default: true })
   isAddable!: boolean
@@ -113,18 +153,28 @@ export default class TablePage extends Vue {
   @Prop({ required: false, default: true })
   isEditable!: boolean
 
-  @Prop({ required: false, default: false })
+  @Prop({ required: false, default: true })
   isDeleteable!: boolean
 
-  @Prop({ default: [] })
-  tableColumnsChecked!: Array<string>
+  tableColumnsChecked: Array<string> = []
+
+  @Prop({ required: false, default: () => [] })
+  tableColumnsCheckedInit!: Array<string>
 
   showColumnsList: Array<any> = []
 
   deleteAllList: Array<any> = []
 
-  changePage () {
+  @Emit('changePage')
+  changePage (page: number) {
     console.log('')
+    return page
+  }
+
+  @Emit('changePageSize')
+  changePageSize (size: number) {
+    console.log()
+    return size
   }
 
   getShowColumnsList () {
@@ -163,7 +213,7 @@ export default class TablePage extends Vue {
       )
     }
     if ((this.columnsList && this.columnsList.length === 0) || !this.columnsList) {
-      this.isShowPage = false
+      // this.isShowPage = false
       return []
     }
     return data
@@ -212,19 +262,17 @@ export default class TablePage extends Vue {
   }
 
   // 新增
+  @Emit()
   add () {
     console.log()
   }
 
   // 删除所有数据
+  @Emit('deleteAll')
   deleteAll () {
-    const table: any = this.$refs.table
+    const table: any = this.$refs.tableData
     const data = table.getSelection()
-    if (data.length > 0) {
-      console.log(data)
-    } else {
-      this.$Message.warning('请选择要删除的数据！')
-    }
+    return data
   }
 
   // 导入数据
@@ -233,6 +281,7 @@ export default class TablePage extends Vue {
   }
 
   // 导出数据
+  @Emit('exportData')
   exportData () {
     console.log()
   }
@@ -249,7 +298,7 @@ export default class TablePage extends Vue {
     return index
   }
 
-  @Emit()
+  @Emit('okAdd')
   okAdd () {
     console.log()
   }
@@ -260,6 +309,8 @@ export default class TablePage extends Vue {
 
   created () {
     this.initCheckedColumns()
+
+    this.tableColumnsChecked = this.tableColumnsCheckedInit
   }
 
   mounted () {
@@ -272,15 +323,15 @@ export default class TablePage extends Vue {
   .header-row {
     float: right;
     // margin-top: 10px;
-    margin-bottom: 5px;
+    // margin-bottom: 5px;
+  }
+
+  .ivu-upload {
+    display: inline;
   }
 
   .btn {
-    margin-right: 10px;
-  }
-
-  .btn-delete {
-    margin-right: 20px;
+    margin-left: 10px;
   }
 
   .table-content {

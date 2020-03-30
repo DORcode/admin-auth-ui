@@ -28,13 +28,13 @@
             <Icon type="ios-expand" :size="25" @click="fullScreen" />
             <Dropdown class="language">
               <a href="javascript:void(0)" style="font-size: 20px">
-                语言
+                {{$t('language')}}
                 <Icon :size="25" type="md-arrow-dropdown"/>
               </a>
               <DropdownMenu slot="list">
-                <DropdownItem @click.native="simplifiedChinese()">中文简体</DropdownItem>
-                <DropdownItem @click.native="traditionalChinese()">中文繁体</DropdownItem>
-                <DropdownItem @click.native="english()">English</DropdownItem>
+                <DropdownItem :selected="'zhCN'==selectedLocale" @click.native="changeLocale('zhCN')">{{$t('zhCN')}}</DropdownItem>
+                <DropdownItem :selected="'zhTW'==selectedLocale" @click.native="changeLocale('zhTW')">{{$t('zhTW')}}</DropdownItem>
+                <DropdownItem :selected="'en'==selectedLocale" @click.native="changeLocale('en')">{{$t('en')}}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
             <Dropdown class="manage-buttons">
@@ -54,14 +54,15 @@
               <tags-nav ref="tagsNav" :currentIndex="currentIndex" :transLateX="transLateX" @selectTags="selectTags" @close="close" @tagScroll="tagScroll" :list="openedNavList"></tags-nav>
             </div>
             <Content class="content">
-              <keep-alive>
+              <keep-alive :include="openTagsName">
                 显示主界面
-                <router-view/>
+                <router-view></router-view>
               </keep-alive>
+
             </Content>
           </Layout>
         </Content>
-        <Footer class="layout-footer">后台管理</Footer>
+        <Footer class="layout-footer">{{$t('adminManage')}}</Footer>
       </Layout>
     </Layout>
   </div>
@@ -88,6 +89,10 @@ declare module 'vue/types/vue' {
   }
 })
 export default class Home extends Vue {
+  // Home
+
+  selectedLocale = localStore.get('locale')
+
   isCollapsed = false
 
   isFullScreen = false
@@ -95,8 +100,11 @@ export default class Home extends Vue {
   activeName = ''
   openName = 0
 
+  // 需要用store来存储，解决直接从浏览器打开一个页面进入时，回显
   currentIndex = 0
   transLateX = 0
+
+  openTagsName: any[] = []
 
   menuList: any = localStore.get('menus') || [
     {
@@ -108,12 +116,29 @@ export default class Home extends Vue {
         {
           name: '系统管理',
           path: '/sys/manage/system',
-          type: 2
+          comName: 'System',
+          type: 2,
+          meta: {
+            keepAlive: true
+          }
         },
         {
           name: '用户管理',
           path: '/sys/manage/user',
-          type: 3
+          comName: 'User',
+          type: 3,
+          meta: {
+            keepAlive: true
+          }
+        },
+        {
+          name: '角色管理',
+          path: '/sys/manage/role',
+          comName: 'Role',
+          type: 2,
+          meta: {
+            keepAlive: true
+          }
         }
       ]
     },
@@ -124,13 +149,9 @@ export default class Home extends Vue {
       type: 1,
       subMenus: [
         {
-          name: '角色管理',
-          path: '/sys/manage/role',
-          type: 2
-        },
-        {
           name: '权限管理',
           path: '/sys/manage/permission',
+          comName: 'Permission',
           type: 3
         }
       ]
@@ -208,11 +229,13 @@ export default class Home extends Vue {
       // 当前点击的不是已经打开的
       if (item.path !== this.openedNavList[this.currentIndex]) {
         this.currentIndex = this.openedNavList.indexOf(item)
+        this.$router.push(item.path)
       }
     } else {
       // 未打开过，跳转
-      this.$router.push(item.path)
       this.openedNavList.push(item)
+      this.getTagList()
+      this.$router.push(item.path)
       this.currentIndex = this.openedNavList.length - 1
     }
     let num = 0
@@ -232,11 +255,14 @@ export default class Home extends Vue {
   }
 
   selectTags (index: number) {
+    if (index !== this.currentIndex) {
+      this.openPage(this.openedNavList[index])
+    }
     // this.currentIndex = index
-    this.openPage(this.openedNavList[index])
     // 当tag-nav 选择了后，从menu列表中得到activename的名称
   }
 
+  // 关闭分3种情况，关闭单个，关闭所有，关闭其他
   close (flag: number) {
     if (flag === -1) {
       this.closeAll()
@@ -245,22 +271,28 @@ export default class Home extends Vue {
     } else {
       this.closeOne(flag)
     }
+    this.getTagList()
   }
 
+  // 关闭时，需要清除缓存
   closeOne (index: number) {
+    const item = this.openedNavList[this.currentIndex]
     const lastIndex = this.currentIndex
     this.openedNavList.splice(index, 1)
-    if (index === this.currentIndex) {
+    // 关闭的是当前的页面时
+    if (index === lastIndex) {
       if (this.openedNavList.length > 1) {
         this.currentIndex = index - 1
       } else {
         this.currentIndex = 0
       }
       this.getActiveName(this.openedNavList[this.currentIndex])
-    }
-
-    if (lastIndex !== this.currentIndex) {
       this.$router.push(this.openedNavList[this.currentIndex].path)
+    } else {
+      // 关闭的不是当前页面，修改当前index即可
+      const newIndex = this.openedNavList.indexOf(item)
+      this.currentIndex = newIndex
+      this.getActiveName(this.openedNavList[this.currentIndex])
     }
   }
 
@@ -307,24 +339,30 @@ export default class Home extends Vue {
     }
   }
 
-  simplifiedChinese () {
-    console.log('中文简体')
-  }
-
-  traditionalChinese () {
-    console.log('中文繁体')
-  }
-
-  english () {
-    console.log('英语')
-  }
-
   logout () {
     this.$router.push({ path: '/login' })
     localStore.remove('menus')
     sessionStore.remove('token')
     sessionStore.remove('tokenExpireTime')
     console.log('退出登录')
+  }
+
+  changeLocale (name: string) {
+    this.selectedLocale = name
+    localStore.set('locale', name)
+    this.$i18n.locale = name
+  }
+
+  getTagList () {
+    const names: any[] = []
+    this.openedNavList.forEach(
+      (val: any) => {
+        if (val.meta && val.meta.keepAlive && val.comName) {
+          names.push(val.comName)
+        }
+      }
+    )
+    this.openTagsName = names
   }
 
   get menuitemClasses () {

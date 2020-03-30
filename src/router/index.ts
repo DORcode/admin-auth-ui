@@ -10,7 +10,8 @@ Vue.use(VueRouter)
 export const routes = [
   {
     path: '/login',
-    name: '登录页面',
+    name: '登录',
+    comName: 'Login',
     icon: '',
     isNeedLogin: false, // 是否需要登录
     access: false, // 是否可以访问， true:可以访问, false: 不可以访问
@@ -18,49 +19,67 @@ export const routes = [
   },
   {
     path: '/',
-    name: 'Home',
+    name: '/',
     icon: '',
     component: () => import('../views/home/Home.vue')
   },
   {
     path: '/about',
-    name: 'About',
+    name: '关于',
     icon: '',
     component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   },
   {
     path: '/sys/manage',
-    name: '系统管理',
+    name: '',
     icon: '',
     component: Home,
     children: [
       {
         path: 'system',
-        name: '应用',
+        name: '系统管理',
+        comName: 'System',
         icon: '',
+        meta: {
+          keepAlive: true
+        },
         component: () => import('../views/app/System.vue')
       },
       {
         path: 'user',
-        name: '用户',
+        name: '用户管理',
+        comName: 'User',
         icon: '',
+        meta: {
+          keepAlive: true
+        },
         component: () => import('../views/user/User.vue')
       },
       {
         path: 'role',
-        name: '角色',
+        name: '角色管理',
+        comName: 'Role',
         icon: '',
-        component: () => import('../views/Role.vue')
+        meta: {
+          keepAlive: true,
+          title: '角色管理'
+        },
+        component: () => import('../views/role/Role.vue')
       },
       {
         path: 'permission',
-        name: '权限',
+        name: '权限管理',
+        comName: 'Permission',
         icon: '',
+        meta: {
+          keepAlive: true,
+          title: '权限管理'
+        },
         component: () => import('../views/Permission.vue')
       },
       {
         path: 'table',
-        name: '分页',
+        name: 'table',
         isNeedLogin: false,
         component: () => import('../components/table/table-page.vue')
       }
@@ -98,7 +117,7 @@ export const routes = [
 const router = new VueRouter({
   mode: 'history',
   // base: process.env.BASE_URL,
-  routes
+  routes: routes
 })
 
 function isNeedLogin (item: any): boolean {
@@ -129,10 +148,11 @@ function isAccess (item: any): boolean {
 }
 
 router.beforeEach((to, from, next) => {
+  document.title = `${to.name} | admin-auth`;
   // 获取目标页面是否需要登录
   if (isNeedLogin(to)) {
     const expire = Number(sessionStore.get('tokenExpireTime'))
-    console.log(new Date().getTime())
+    console.log(to)
     // 当前token是否过期
     if (expire < new Date().getTime()) {
       router.push({ path: '/login' })
