@@ -1,6 +1,7 @@
 import axios from 'axios'
-import sessionstore from '../util/sessionstore'
+import sessionStore from '../util/sessionstore'
 import msg from '../util/message'
+import router from '@/router'
 import qs from 'qs'
 
 const TIMEOUT = 600000
@@ -12,8 +13,9 @@ instance.interceptors.request.use(
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*'
     }
-    if (sessionstore.get('token')) {
-      config.headers.token = sessionstore.get('token')
+    console.log(sessionStore.get('token'))
+    if (sessionStore.get('token')) {
+      config.headers.token = sessionStore.get('token')
     }
     return config
   },
@@ -26,8 +28,14 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   response => {
     const res = response.data
-    msg.info(res.msg)
-    console.log(res)
+    if (res.success) {
+      msg.info(res.msg)
+    } else {
+      if (res.code === 2040) {
+        router.push('/login')
+      }
+      msg.error(res.msg)
+    }
     return res
   },
   error => {
@@ -170,7 +178,7 @@ const User = {
   },
 
   updateSysUser (data: any) {
-    return post('/api/sysuser/deleteSysUsers', data)
+    return post('/api/sysuser/updateSysUser', data)
   },
 
   insertSysUser (data: any) {
@@ -185,21 +193,104 @@ const User = {
 
 // 角色管理
 const Role = {
-    
+  selectSysRoles (data: any) {
+    return post('/api/sysrole/selectSysRoles', data)
+  },
+
+  deleteSysRoleById (data: any) {
+    return post('/api/sysrole/deleteSysRoleById', data)
+  },
+
+  deleteSysRoles (data: any) {
+    return post('/api/sysrole/deleteSysRoles', data)
+  },
+
+  updateSysRole (data: any) {
+    return post('/api/sysrole/updateSysRole', data)
+  },
+
+  insertSysRole (data: any) {
+    return post('/api/sysrole/insertSysRole', data)
+  },
+
+  insertSysRoles (data: any) {
+    return post('/api/sysrole/insertSysRoles', data)
+  }
+}
+
+const RoleUser = {
+  selectSysUserRoles (data: any) {
+    return post('/api/sysuserrole/selectSysUserRoles', data)
+  },
+
+  selectRelatedSysUsers (data: any) {
+    return post('/api/sysuserrole/selectRelatedSysUsers', data)
+  },
+
+  selectUnrelatedSysUsers (data: any) {
+    return post('/api/sysuserrole/selectUnrelatedSysUsers', data)
+  },
+
+  deleteSysUserRoleById (data: any) {
+    return post('/api/sysuserrole/deleteSysUserRoleById', data)
+  },
+
+  deleteSysUserRoles (data: any) {
+    return post('/api/sysuserrole/deleteSysUserRoles', data)
+  },
+
+  insertSysUserRoles (data: any) {
+    return post('/api/sysuserrole/insertSysUserRoles', data)
+  }
 }
 
 const Permission = {
   menus () {
     return post('/api/syspermission/menus')
-  }
+  },
 
+  selectPermissionList () {
+    return post('/api/syspermission/selectPermissionList')
+  },
+
+  insertSysPermission (data: any) {
+    return post('/api/syspermission/insertSysPermission', data)
+  },
+
+  updateSysPermission (data: any) {
+    return post('/api/syspermission/updateSysPermission', data)
+  },
+
+  deleteSysPermission (data: any) {
+    return post('/api/syspermission/deleteSysPermission', data)
+  },
+
+  deleteSysPermissions (data: any) {
+    return post('/api/syspermission/deleteSysPermissions', data)
+  }
+}
+
+const RolePermission = {
+  selectSysRolePermissions (roleId: string) {
+    return get(`/api/syspermission/selectSysRolePermissions/${roleId}`)
+  },
+
+  insertSysRolePermissions (data: any) {
+    return post('/api/syspermission/insertSysRolePermissions', data)
+  },
+
+  deleteSysRolePermission (roleId: string) {
+    return get(`/api/syspermission/deleteSysRolePermission/${roleId}`)
+  }
 }
 
 const APIS = {
   ...Login,
   ...User,
   ...Role,
-  ...Permission
+  ...RoleUser,
+  ...Permission,
+  ...RolePermission,
 }
 
 export default APIS

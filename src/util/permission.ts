@@ -39,9 +39,9 @@ export default function getMenus () {
         const data = res.data
         localStore.set('menus', getMenusWithRouter(data))
         this.$router.push({ path: '/' })
-        this.$Message.success(res.data.msg)
+        // this.$Message.success(res.data.msg)
       } else {
-        this.$Message.warning(res.data.msg)
+        // this.$Message.warning(res.data.msg)
       }
     }
   )

@@ -14,12 +14,14 @@ const en = {
   queryCondition: 'Query Condition',
   query: 'Query',
   reset: 'Reset',
+  save: 'Save',
   createTime: 'Create Time',
   updateTime: 'Update Time',
   inputCreateTime: 'Please choose create time',
   inputUpdateTime: 'Please choose update time',
   add: 'Create',
-  edit: 'Eidt',
+  edit: 'Edit',
+  delete: 'Delete',
   deleteAll: 'Delete Multi',
   importData: 'Import Data',
   exportData: 'Export Data',
@@ -28,8 +30,9 @@ const en = {
   headerSelect: 'Title Select',
   ok: 'Ok',
   cancel: 'Cancel',
-  manageUser: 'Manage User',
-  managePerm: 'Manage Perm',
+  roleUser: 'Role User',
+  rolePerm: 'Role Perm',
+  icon: 'Icon',
   userPage: {
     inputName: 'Please input name',
     inputUserName: 'Please input username',
@@ -44,8 +47,25 @@ const en = {
     inputName: 'Please input role name',
     roleName: 'Role Name',
     roleCode: 'Role Code',
-    inputCode: 'Please input role code'
-  }
+    inputCode: 'Please input role code',
+    assUser: 'Ass User',
+    assPerm: 'Ass Permission',
+  },
+  permPage: {
+    name: 'Name',
+    parent: 'Parent',
+    parentInput: 'Please choose parent',
+    url: 'Path',
+    inputUrl: 'Please input path',
+    type: 'Type',
+    inputType: 'Please choose type',
+    module: 'Module',
+    menu: 'Menu',
+    operate: 'Operate',
+    desc: 'Description',
+    inputDesc: 'Please input description',
+    seq: 'Sequence',
+  }  
 }
 
 export default en

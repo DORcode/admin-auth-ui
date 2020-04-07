@@ -19,7 +19,7 @@ export const routes = [
   },
   {
     path: '/',
-    name: '/',
+    name: '首页',
     icon: '',
     component: () => import('../views/home/Home.vue')
   },
@@ -75,7 +75,7 @@ export const routes = [
           keepAlive: true,
           title: '权限管理'
         },
-        component: () => import('../views/Permission.vue')
+        component: () => import('../views/permission/Permission.vue')
       },
       {
         path: 'table',
@@ -116,7 +116,6 @@ export const routes = [
 
 const router = new VueRouter({
   mode: 'history',
-  // base: process.env.BASE_URL,
   routes: routes
 })
 
@@ -157,6 +156,9 @@ router.beforeEach((to, from, next) => {
     if (expire < new Date().getTime()) {
       router.push({ path: '/login' })
     } else {
+      // if (to.path === '/login') {
+      //   next('/')
+      // }
       // 有访问的权限
       if (isAccess(to)) {
         next()

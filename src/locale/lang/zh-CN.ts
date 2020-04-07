@@ -13,6 +13,7 @@ const zhCN = {
   queryCondition: '查询条件',
   query: '查询',
   reset: '重置',
+  save: '保存',
   code: '编码',
   createTime: '创建时间',
   updateTime: '修改时间',
@@ -20,6 +21,7 @@ const zhCN = {
   inputUpdateTime: '请选择修改时间',
   add: '新增',
   edit: '编辑',
+  delete: '删除',
   deleteAll: '多条删除',
   importData: '导入数据',
   exportData: '导出数据',
@@ -28,8 +30,9 @@ const zhCN = {
   headerSelect: '表头选择',
   ok: '确定',
   cancel: '取消',
-  manageUser: '管理用户',
-  managePerm: '管理权限',
+  roleUser: '角色用户',
+  rolePerm: '角色权限',
+  icon: '图标',
   userPage: {   
     inputName: '请输入姓名',
     inputUserName: '输入用户名',
@@ -44,8 +47,25 @@ const zhCN = {
     inputName: '请输入角色名称',
     roleName: '角色名称',
     roleCode: '角色编码',
-    inputCode: '输入角色编码'
-  }
+    inputCode: '输入角色编码',
+    assUser: '关联用户',
+    assPerm: '关联权限',
+  },
+  permPage: {
+    name: '名称',
+    parent: '父级',
+    parentInput: '请选择父级',
+    url: '链接',
+    inputUrl: '请输入链接',
+    type: '类型',
+    inputType: '请选择类型',
+    module: '模块',
+    menu: '菜单',
+    operate: '操作',
+    desc: '描述',
+    inputDesc: '请输入描述',
+    seq: '顺序',
+  } 
 }
 
 export default zhCN

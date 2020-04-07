@@ -57,7 +57,7 @@
       </Form>
     </Card>
     <Card class="card-list">
-      <table-page ref="tablePage"
+      <table-page ref="userTablePage"
           :loading="loading"
           :total="total"
           :current="current"
@@ -211,7 +211,7 @@ export default class User extends Vue {
     ]
   }
 
-  importAction = ''
+  importAction = '/api/sysuser/importUsers'
 
   handleSubmit () {
     console.log(this.formData)
@@ -220,20 +220,11 @@ export default class User extends Vue {
 
   handleReset () {
     this.formData = {}
-    // const qf: any = this.$refs.formData
-    // qf.resetFields()
+    this.getUserList()
   }
 
-  beforeCreate () {
-    console.log(this.$route.matched[1].components.default.name)
-    console.log(this)
-    console.log(this.$vnode)
-    console.log(this.$vnode.componentInstance)
-    console.log('beforeCreate')
-  }
-
-  destroyed () {
-    console.log('destroyed')
+  created () {
+    this.getUserList()
   }
 
   getUserList () {
@@ -260,8 +251,9 @@ export default class User extends Vue {
     this.$api.selectSysUsers(this.formData).then(
       (res: any) => {
         console.log(res)
-        if (res && res.data && res.data.success && res.data.length >= 0) {
-          this.dataList = res.data
+        if (res && res.success && res.data.records.length > 0) {
+          this.dataList = res.data.records
+          this.total = res.data.total
         }
         // else {
         //   if (res && res.data && res.data.msg) {
@@ -280,9 +272,10 @@ export default class User extends Vue {
       if (valid) {
         // 无id的为新增
         if (!this.createFormData.id) {
+          console.log(this.createFormData)
           this.$api.insertSysUser(this.createFormData).then(
             (res: any) => {
-              if (res && res.data && res.data.success && res.data.length >= 0) {
+              if (res && res.success) {
                 this.createFormData = {}
                 this.addModal = false
                 this.getUserList()
@@ -292,7 +285,7 @@ export default class User extends Vue {
         } else {
           this.$api.updateSysUser(this.createFormData).then(
             (res: any) => {
-              if (res && res.data && res.data.success && res.data.length >= 0) {
+              if (res && res.success) {
                 this.createFormData = {}
                 this.addModal = false
                 this.getUserList()
@@ -308,7 +301,6 @@ export default class User extends Vue {
 
   cancel () {
     this.addModal = false
-    console.log()
   }
 
   addUser () {
@@ -337,11 +329,11 @@ export default class User extends Vue {
     console.log()
     this.$api.deleteSysUserById(this.dataList[index]).then(
       (res: any) => {
-        if (res.data && res.data.success) {
+        if (res && res.success) {
           this.dataList.splice(index, 1)
-          this.$Message.info(res.data.message)
+          // this.$Message.info(res.data.message)
         } else {
-          this.$Message.error(res.data.message)
+          // this.$Message.error(res.data.message)
         }
       }
     )
@@ -354,11 +346,11 @@ export default class User extends Vue {
     } else {
       this.$api.deleteSysUsers(data).then(
         (res: any) => {
-          if (res.data && res.data.success) {
+          if (res && res.success) {
             this.getUserList()
-            this.$Message.info(res.data.message)
+            // this.$Message.info(res.data.message)
           } else {
-            this.$Message.error(res.data.message)
+            // this.$Message.error(res.data.message)
           }
         }
       )

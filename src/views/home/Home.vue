@@ -3,24 +3,70 @@
     <Layout class="layout-page">
       <Sider ref="side1" class="layout-sider" :style="{overflow: 'auto'}" hide-trigger collapsible :collapsed-width="78" v-model="isCollapsed">
         <div class="layout-logo"></div>
-        <Menu ref="leftMenu" class="menu" :accordion="true" :active-name="activeName" theme="dark" width="auto"
+        <Menu  ref="leftMenu" class="menu" :accordion="true" :active-name="activeName" theme="dark" width="auto"
           :class="menuitemClasses" :open-names="[openName]">
-          <Submenu v-for="(item, index) in menuList" @click.native="openPage(item, index)" :key="index" :name="index">
-            <template slot="title">
-              <Icon :type="isCustomIcon(item) ? item.icon : 'ios-navigate'"></Icon>
-              <span>{{ item.name }}</span>
-            </template>
-            <MenuItem v-show="item.subMenus && item.subMenus.length" v-for="(sub, subidx) in item.subMenus"
-              :key="subidx" :name="index + '-' + subidx" @click.native="openPage(sub, subidx)">
-              <Icon type="ios-navigate"></Icon>
-              <span>{{ sub.name }}</span>
-            </MenuItem>
-          </Submenu>
+          <div v-if="!isCollapsed">
+            <div v-for="(item, index) in menuList" :key="index">
+              <Submenu v-if="item.subMenus && item.subMenus.length>1 && !isCollapsed" :name="index">
+                <template slot="title">
+                  <Icon :type="isCustomIcon(item) ? item.icon : 'ios-navigate'"></Icon>
+                  <span>{{ item.name }}</span>
+                </template>
+                <div v-for="(firstsub, firstidx) in item.subMenus"
+                  :key="firstidx">
+                  <Submenu v-if="firstsub.subMenus && firstsub.subMenus.length>1 && !isCollapsed" :name="index + '-' + firstidx">
+                    <template slot="title">
+                      <Icon :type="isCustomIcon(firstsub) ? firstsub.icon : 'ios-navigate'"></Icon>
+                      <span>{{ firstsub.name }}</span>
+                    </template>
+                    <MenuItem v-for="(secondsub, secondidx) in firstsub.subMenus"
+                      :key="secondidx" @click.native="openPage(secondsub, secondidx)" :name="index + '-' + firstidx + '-' + secondidx">
+                      <Icon type="ios-navigate"></Icon>
+                      <span>{{ secondsub.name }}</span>
+                    </MenuItem>
+                  </Submenu>
+                  <MenuItem v-else @click.native="openPage(firstsub, firstidx)" :name="index + '-' + firstidx">
+                    <Icon type="ios-navigate"></Icon>
+                    <span>{{ firstsub.name }}</span>
+                  </MenuItem>
+                </div>
+              </Submenu>
+              <MenuItem v-else @click.native="openPage(item, index)" :name="index">
+                <Icon type="ios-navigate"></Icon>
+                <span>{{ item.name }}</span>
+              </MenuItem>
+            </div>
+          </div>
+
+          <!-- <div class="center-right" v-if="isCollapsed">
+            <div v-for="(item,index) in menuList" :key="index">
+              <Dropdown trigger="hover" placement="right-end">
+                <Icon :type="isCustomIcon(item) ? item.icon : 'ios-navigate'" size="18"></Icon>
+                <DropdownMenu slot="list" v-if="item.subMenus && item.subMenus.length>1">
+                  <div v-for="(secItem,i) in item.subMenus" :key="i">
+                    <Dropdown placement="right-start" v-if="secItem.subMenus && secItem.subMenus.length>0">
+                      <DropdownItem name="">
+                        {{secItem.name}}
+                        <Icon :type="isCustomIcon(secItem) ? secItem.icon : 'ios-navigate'"></Icon>
+                      </DropdownItem>
+                      <DropdownMenu slot="list">
+                        <DropdownItem v-for="(tt, t) in secItem.subMenus" :key="t" name="" @on-click="openPage(tt, t)">{{tt.name}}</DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                    <DropdownItem v-else name="" @on-click="openPage(secItem, i)">{{secItem.name}}</DropdownItem>
+                  </div>
+                </DropdownMenu>
+                <DropdownMenu v-else>
+                  <DropdownItem name="" @on-click="openPage(item, index)">{{item.name}}</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          </div> -->
         </Menu>
       </Sider>
       <Layout class="layout-main">
         <Header class="layout-header">
-          <Icon class="icon-collapse" v-show="true" @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '0 20px'}" type="md-menu" size="24"></Icon>
+          <Icon class="icon-collapse" v-show="false" @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '0 20px'}" type="md-menu" size="24"></Icon>
           <div class="header-left">
             <bread-nav class="current-bread" :list="breadlist"></bread-nav>
           </div>
@@ -55,14 +101,14 @@
             </div>
             <Content class="content">
               <keep-alive :include="openTagsName">
-                显示主界面
                 <router-view></router-view>
               </keep-alive>
-
             </Content>
           </Layout>
         </Content>
-        <Footer class="layout-footer">{{$t('adminManage')}}</Footer>
+        <Footer class="layout-footer">
+            {{$t('adminManage')}}
+        </Footer>
       </Layout>
     </Layout>
   </div>
@@ -139,22 +185,24 @@ export default class Home extends Vue {
           meta: {
             keepAlive: true
           }
-        }
-      ]
-    },
-    {
-      name: '股票数据',
-      path: '',
-      icon: 'ios-home',
-      type: 1,
-      subMenus: [
+        },
         {
           name: '权限管理',
           path: '/sys/manage/permission',
           comName: 'Permission',
-          type: 3
+          type: 3,
+          meta: {
+            keepAlive: true
+          }
         }
       ]
+    },
+    {
+      name: '管理',
+      path: '/sys/test',
+      icon: '',
+      type: 1,
+      subMenus: []
     }
   ]
 
@@ -223,31 +271,33 @@ export default class Home extends Vue {
   }
 
   openPage (item: any) {
-    const lastIndex = this.currentIndex
-    // 如果已经打开，则需要滚动到打开这个tag
-    if (this.isOpened(item)) {
-      // 当前点击的不是已经打开的
-      if (item.path !== this.openedNavList[this.currentIndex]) {
-        this.currentIndex = this.openedNavList.indexOf(item)
+    if (item.path) {
+      const lastIndex = this.currentIndex
+      // 如果已经打开，则需要滚动到打开这个tag
+      if (this.isOpened(item)) {
+        // 当前点击的不是已经打开的
+        if (item.path !== this.openedNavList[this.currentIndex]) {
+          this.currentIndex = this.openedNavList.indexOf(item)
+          this.$router.push(item.path)
+        }
+      } else {
+        // 未打开过，跳转
+        this.openedNavList.push(item)
+        this.getTagList()
         this.$router.push(item.path)
+        this.currentIndex = this.openedNavList.length - 1
       }
-    } else {
-      // 未打开过，跳转
-      this.openedNavList.push(item)
-      this.getTagList()
-      this.$router.push(item.path)
-      this.currentIndex = this.openedNavList.length - 1
+      let num = 0
+      if (this.currentIndex > lastIndex) {
+        num = this.currentIndex - lastIndex + 1
+      } else {
+        num = this.currentIndex - (lastIndex)
+      }
+      this.getActiveName(item)
+      // scroll tags
+      const tagsNav: any = this.$refs.tagsNav
+      tagsNav.scrollNum(num)
     }
-    let num = 0
-    if (this.currentIndex > lastIndex) {
-      num = this.currentIndex - lastIndex + 1
-    } else {
-      num = this.currentIndex - (lastIndex)
-    }
-    this.getActiveName(item)
-    // scroll tags
-    const tagsNav: any = this.$refs.tagsNav
-    tagsNav.scrollNum(num)
   }
 
   tagScroll (num: number) {

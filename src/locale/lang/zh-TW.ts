@@ -13,6 +13,7 @@ const zhTW = {
   queryCondition: '查詢條件',
   query: '查詢',
   reset: '重置',
+  save: '保存',
   code: '編碼',
   createTime: '創建時間',
   updateTime: '修改時間',
@@ -20,6 +21,7 @@ const zhTW = {
   inputUpdateTime: '請選擇修改時間',
   add: '新增',
   edit: '編輯',
+  delete: '刪除',
   deleteAll: '多條刪除',
   importData: '導入數據',
   exportData: '導出數據',
@@ -28,8 +30,9 @@ const zhTW = {
   headerSelect: '表頭選擇',
   ok: '確定',
   cancel: '取消',
-  manageUser: '管理用戶',
-  managePerm: '管理權限',
+  roleUser: '角色用戶',
+  rolePerm: '角色權限',
+  icon: '圖標',
   userPage: {
     inputName: '請輸入姓名',
     inputUserName: '請輸入用戶名',
@@ -44,8 +47,25 @@ const zhTW = {
     inputName: '請輸入角色名稱',
     roleName: '角色名稱',
     roleCode: '角色編碼',
-    inputCode: '輸入角色編碼'
-  }
+    inputCode: '輸入角色編碼',
+    assUser: '關聯用戶',
+    assPerm: '關聯權限',
+  },
+  permPage: {
+    name: '名稱',
+    parent: '父級',
+    parentInput: '請選擇父級',
+    url: '链接',
+    inputUrl: '请输入链接',
+    type: '類型',
+    inputType: '請選擇類型',
+    module: '模塊',
+    menu: '菜單',
+    operate: '操作',
+    desc: '描述',
+    inputDesc: '請輸入描述',
+    seq: '順序',
+  } 
 }
 
 export default zhTW

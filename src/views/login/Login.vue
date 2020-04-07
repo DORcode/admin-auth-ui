@@ -56,13 +56,12 @@ export default {
           Api.login(this.formInline).then(
             res => {
               console.log(res)
-              if (res.data && res.data.success) {
-                sessionStore.set('token', res.token)
+              console.log(res.data.tokenExpireTime)
+              if (res.data && res.success) {
+                sessionStore.set('token', res.data.token)
                 sessionStore.set('tokenExpireTime', res.data.tokenExpireTime)
-                this.$Message.success(res.data.msg)
                 getMenus()
               } else {
-                this.$Message.error(res.msg)
               }
             }
           )
@@ -70,6 +69,18 @@ export default {
           this.$Message.error('请求输入帐户或密码！')
         }
       })
+    },
+    isLogin () {
+      if (Number(sessionStore.get('tokenExpireTime')) > new Date().getTime()) {
+        this.$router.push('/')
+      }
+    }
+  },
+  beforeCreate () {
+    console.log(Number(sessionStore.get('token')))
+    console.log(Number(sessionStore.get('tokenExpireTime')))
+    if (Number(sessionStore.get('tokenExpireTime')) > new Date().getTime()) {
+      this.$router.push('/')
     }
   }
 }

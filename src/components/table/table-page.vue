@@ -6,26 +6,26 @@
         <h4>{{tableTitle}}</h4>
       </Col>
       <Col class="header-row">
-        <Dropdown class="manage-buttons">
+        <Dropdown v-show="isDropable" class="manage-buttons">
           <a href="javascript:void(0)" style="font-size: 20px">
-            <Icon :size="25" type="md-arrow-dropdown"/>
+            <Icon :size="21" type="md-arrow-dropdown"/>
           </a>
           <DropdownMenu slot="list">
-            <DropdownItem >
-              <Button class="btn btn-add" :disabled="!isAddable" icon="ios-add" type="info" size="default" @click="add">{{$t('add')}}</Button>
+            <DropdownItem v-show="isAddable">
+              <Button class="btn btn-add" :disabled="!isAddable" icon="ios-add" type="info" size="small" @click="add">{{$t('add')}}</Button>
             </DropdownItem>
-            <DropdownItem >
-              <Button class="btn btn-delete" :disabled="!isDeleteable" icon="ios-remove" type="error" size="default" @click="deleteAll">{{$t('deleteAll')}}</Button>
+            <DropdownItem v-show="isDeleteable">
+              <Button class="btn btn-delete" :disabled="!isDeleteable" icon="ios-remove" type="error" size="small" @click="deleteAll">{{$t('deleteAll')}}</Button>
             </DropdownItem>
-            <DropdownItem >
+            <DropdownItem v-show="isImportable">
               <Upload :action="importAction" style="width:110px;heigth:32px;">
-                <Button class="btn" type="info" icon="ios-arrow-dropup" size="default" @click="importData">{{$t('importData')}}</Button>
+                <Button class="btn" type="info" icon="ios-arrow-dropup" size="small" @click="importData">{{$t('importData')}}</Button>
               </Upload>
             </DropdownItem>
-            <DropdownItem >
-              <Button class="btn" type="info" icon="ios-arrow-down" size="default" @click="exportData">{{$t('exportData')}}</Button>
+            <DropdownItem v-show="isExportable">
+              <Button class="btn" type="info" icon="ios-arrow-down" size="small" @click="exportData">{{$t('exportData')}}</Button>
             </DropdownItem>
-            <DropdownItem >
+            <DropdownItem v-show="isShowSelectTitle">
               <Button class="btn" type="success" icon="ios-download" size="small" @click="openDrawer = true">{{$t('headerTitile')}}</Button>
             </DropdownItem>
           </DropdownMenu>
@@ -50,23 +50,27 @@
           <Checkbox :label="item.key">{{ item.title }}</Checkbox>
         </Checkbox-group>
       </Drawer>
-      <Table ref="tableData" :loading="loading" :border="showBorder" :data="dataList"
+      <Table ref="tableData" :loading="loading" :border="showBorder"
+        :data="dataList"
         :columns="showColumnsList"
         min-height="500"
         @on-select-cancel="selectCancel"
         @on-select-all-cancel="selectAllCancel"
         @on-selection-change="selectChange"
+        @on-row-dblclick="dbclick"
         @on-select-all="selectAll"
         @on-sort-change="sortChange">
         <template slot-scope="{ row, index }" slot="action" v-show="isShowActionTemplate">
-          <Poptip confirm trigger="click" title="Title" content="content" >
-            <Button :disabled="!isEditable" type="primary" size="small" @click="edit(index)" style="margin-right: 5px">Edit</Button>
-          </Poptip>
-          <Poptip confirm trigger="click" title="Title" content="content" >
-            <Button :disabled="!isDeleteable" type="error" size="small" @click="remove(index)">Delete</Button>
-          </Poptip>
+          <div>
+          <!-- <Poptip confirm trigger="click" title="Title" content="content" > -->
+            <Button v-show="isShowEdit" :disabled="!isEditable" type="primary" size="small" @click="edit(index)" style="margin-right: 5px">Edit</Button>
+            <!-- </Poptip> -->
+            <Poptip v-show="isShowDelete"  confirm trigger="click" title="Title" content="content" @on-ok="remove(index)" style="z-index:999">
+              <Button :disabled="!isDeleteable" type="error" size="small">Delete</Button>
+            </Poptip>
+            <slot name="action" :rowIndex="index" :row="row"></slot>
+          </div>
         </template>
-        <slot name="action"></slot>
       </Table>
     </Row>
     <div v-show="isShowPage" style="margin: 10px;overflow: hidden">
@@ -123,7 +127,7 @@ export default class TablePage extends Vue {
   @Prop({ required: false, default: true })
   isShowActionTemplate!: boolean
 
-  @Prop({ required: true})
+  @Prop({ required: false, default: '' })
   importAction!: string
 
   // 分页数据
@@ -148,13 +152,31 @@ export default class TablePage extends Vue {
   pageSizeOpts!: number[]
 
   @Prop({ required: false, default: true })
+  isDropable!: boolean
+
+  @Prop({ required: false, default: true })
   isAddable!: boolean
 
   @Prop({ required: false, default: true })
   isEditable!: boolean
 
   @Prop({ required: false, default: true })
+  isShowEdit!: boolean
+
+  @Prop({ required: false, default: true })
   isDeleteable!: boolean
+
+  @Prop({ required: false, default: true })
+  isShowDelete!: boolean
+
+  @Prop({ required: false, default: true })
+  isImportable!: boolean
+
+  @Prop({ required: false, default: true })
+  isExportable!: boolean
+
+  @Prop({ required: false, default: true })
+  isShowSelectTitle!: boolean
 
   tableColumnsChecked: Array<string> = []
 
@@ -259,6 +281,12 @@ export default class TablePage extends Vue {
     console.log(column)
     console.log(key)
     console.log(order)
+  }
+
+  @Emit()
+  dbclick (row: any) {
+    console.log(row)
+    return row
   }
 
   // 新增
