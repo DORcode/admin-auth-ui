@@ -16,7 +16,7 @@
   "dependencies": {
     "@types/node": "^13.9.1",
     "@types/qs": "^6.9.1",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "chromedriver": "^80.0.1",
     "clipboard": "^2.0.6",
     "codemirror": "^5.52.0",
